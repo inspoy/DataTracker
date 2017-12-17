@@ -80,6 +80,10 @@ namespace Instech.DataTracker
             }
         }
 
+        /// <summary>
+        /// 发送数据
+        /// </summary>
+        /// <param name="msg"></param>
         public void SendData(string msg)
         {
             if (!isReady || msg == "")
