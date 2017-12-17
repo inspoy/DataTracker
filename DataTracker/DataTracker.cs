@@ -11,6 +11,7 @@ namespace Instech.DataTracker
     /// </summary>
     public class DataTracker
     {
+        #region 单例实现
         private static DataTracker sm_instance;
         private static DataTracker Instance
         {
@@ -24,16 +25,32 @@ namespace Instech.DataTracker
             }
         }
         private DataTracker() { }
-
+        #endregion
+        #region 静态接口方法
         /// <summary>
         /// 初始化
         /// </summary>
-        public static void Init()
+        public static void Init(string uid)
         {
-            Instance.InstanceInit();
+            Instance.InstanceInit(uid);
         }
 
-        private void InstanceInit()
+        /// <summary>
+        /// 发送追踪数据
+        /// </summary>
+        /// <param name="data"></param>
+        public static void SendData(ITrackData data)
+        {
+            Instance.InstanceSendData(data);
+        }
+        #endregion
+
+        private void InstanceInit(string uid)
+        {
+
+        }
+
+        private void InstanceSendData(ITrackData data)
         {
 
         }
