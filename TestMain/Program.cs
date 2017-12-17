@@ -10,6 +10,8 @@ namespace TestMain
     {
         static void Main(string[] args)
         {
+            var serverIp = "127.0.0.1";
+            var serverPort = 19;
         }
     }
 }
