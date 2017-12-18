@@ -16,11 +16,6 @@ namespace Instech.DataTracker
         public bool isReady { get => m_isReady && m_socket != null && m_socket.Connected; }
         private bool m_isReady;
 
-        /// <summary>
-        /// 总发送字节数
-        /// </summary>
-        public int totalSendLength { get; private set; }
-
         private IPEndPoint m_ipEnd;
         private Socket m_socket;
         private Action<string> m_errorCallback;
@@ -42,7 +37,6 @@ namespace Instech.DataTracker
             m_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             m_errorCallback = errorCallback;
             m_isReady = false;
-            totalSendLength = 0;
             m_socket.BeginConnect(m_ipEnd, result =>
             {
                 try
@@ -70,15 +64,16 @@ namespace Instech.DataTracker
                     m_socket.Disconnect(false);
                 }
                 m_socket.Close();
-                m_socket = null;
             }
+            m_socket = null;
+            m_ipEnd = null;
         }
 
         /// <summary>
         /// 发送数据
         /// </summary>
         /// <param name="msg"></param>
-        public void SendData(string msg)
+        public void SendData(string msg, Action<bool> callback)
         {
             if (!isReady || msg == "")
             {
@@ -92,13 +87,14 @@ namespace Instech.DataTracker
                 {
                     // 发送成功
                     m_socket.EndSend(result);
-                    totalSendLength += data.Length;
+                    callback(true);
                 }, null);
             }
             catch (Exception e)
             {
                 // 发送失败
                 m_errorCallback?.Invoke($"消息发送失败: [{e.GetType()}]{e.Message}");
+                callback(false);
             }
         }
     }

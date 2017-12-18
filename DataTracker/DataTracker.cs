@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Instech.DataTracker
@@ -40,45 +41,53 @@ namespace Instech.DataTracker
         /// 发送追踪数据
         /// </summary>
         /// <param name="data"></param>
-        public static bool SendData(ITrackData data)
+        /// <param name="callback">调用结果，返回true为成功</param>
+        public static void SendData(ITrackData data, Action<bool> callback)
         {
-            return Instance.InstanceSendData(data);
+            Instance.InstanceSendData(data, callback);
         }
         #endregion
 
         private string m_uid;
-        private TcpClient m_client;
-        private bool m_connected;
+        private string m_ip;
+        private int m_port;
+        private Action<string> m_errorCallback;
+        private List<TrackDataToSend> m_listRetry = new List<TrackDataToSend>();
 
         private void InstanceInit(string uid, string ip, int port, Action<string> errorCallback = null)
         {
             m_uid = uid;
-            m_client = new TcpClient();
-            m_client.Init(ip, port, errorCallback, succ =>
-            {
-                m_connected = succ;
-                if (!m_connected)
-                {
-                    errorCallback?.Invoke("连接失败");
-                }
-            });
+            m_ip = ip;
+            m_port = port;
+            m_errorCallback = errorCallback;
         }
 
-        private bool InstanceSendData(ITrackData data)
+        private void InstanceSendData(ITrackData data, Action<bool> callback)
         {
-            if (!m_connected || m_client == null || !m_client.isReady)
+
+            var client = new TcpClient();
+            client.Init(m_ip, m_port, m_errorCallback, succ =>
             {
-                // 网络异常
-                return false;
-            }
-            var finalData = new TrackDataToSend()
-            {
-                uid = m_uid,
-                sendTime = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds,
-                data = data
-            };
-            m_client.SendData(JsonConvert.SerializeObject(finalData));
-            return true;
+                if (!succ || client == null || !client.isReady)
+                {
+                    // 网络异常
+                    m_errorCallback?.Invoke("连接失败");
+                    callback(false);
+                    return;
+                }
+                var finalData = new TrackDataToSend()
+                {
+                    uid = m_uid,
+                    sendTime = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds,
+                    data = data
+                };
+                client.SendData(JsonConvert.SerializeObject(finalData), (ret) =>
+                {
+                    client.Uninit();
+                    client = null;
+                    callback(ret);
+                });
+            });
         }
     }
 }
