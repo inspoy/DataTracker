@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Instech.DataTracker
 {
@@ -30,29 +27,58 @@ namespace Instech.DataTracker
         /// <summary>
         /// 初始化
         /// </summary>
-        public static void Init(string uid)
+        /// <param name="uid">用户唯一ID</param>
+        /// <param name="ip">服务端IP地址</param>
+        /// <param name="port">服务端端口号</param>
+        /// <param name="errorCallback">发生错误时的回调</param>
+        public static void Init(string uid, string ip, int port, Action<string> errorCallback)
         {
-            Instance.InstanceInit(uid);
+            Instance.InstanceInit(uid, ip, port, errorCallback);
         }
 
         /// <summary>
         /// 发送追踪数据
         /// </summary>
         /// <param name="data"></param>
-        public static void SendData(ITrackData data)
+        public static bool SendData(ITrackData data)
         {
-            Instance.InstanceSendData(data);
+            return Instance.InstanceSendData(data);
         }
         #endregion
 
-        private void InstanceInit(string uid)
-        {
+        private string m_uid;
+        private TcpClient m_client;
+        private bool m_connected;
 
+        private void InstanceInit(string uid, string ip, int port, Action<string> errorCallback = null)
+        {
+            m_uid = uid;
+            m_client = new TcpClient();
+            m_client.Init(ip, port, errorCallback, succ =>
+            {
+                m_connected = succ;
+                if (!m_connected)
+                {
+                    errorCallback?.Invoke("连接失败");
+                }
+            });
         }
 
-        private void InstanceSendData(ITrackData data)
+        private bool InstanceSendData(ITrackData data)
         {
-
+            if (!m_connected || m_client == null || !m_client.isReady)
+            {
+                // 网络异常
+                return false;
+            }
+            var finalData = new TrackDataToSend()
+            {
+                uid = m_uid,
+                sendTime = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds,
+                data = data
+            };
+            m_client.SendData(JsonConvert.SerializeObject(finalData));
+            return true;
         }
     }
 }

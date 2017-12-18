@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Instech.DataTracker
 {
@@ -26,7 +23,6 @@ namespace Instech.DataTracker
 
         private IPEndPoint m_ipEnd;
         private Socket m_socket;
-        private Action<string> m_clientCallback;
         private Action<string> m_errorCallback;
 
         /// <summary>
@@ -34,18 +30,16 @@ namespace Instech.DataTracker
         /// </summary>
         /// <param name="ip">服务端IP地址</param>
         /// <param name="port">服务端端口号</param>
-        /// <param name="clientCallback">接收数据的回调</param>
         /// <param name="stateCallback">接收连接结果的回调</param>
+        /// <param name="errorCallback">发生错误时的回调</param>
         public void Init(
             string ip,
             int port,
-            Action<string> clientCallback,
             Action<string> errorCallback,
             Action<bool> stateCallback)
         {
             m_ipEnd = new IPEndPoint(IPAddress.Parse(ip), port);
             m_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            m_clientCallback = clientCallback;
             m_errorCallback = errorCallback;
             m_isReady = false;
             totalSendLength = 0;
@@ -55,7 +49,7 @@ namespace Instech.DataTracker
                 {
                     m_socket.EndConnect(result);
                     m_isReady = true;
-                    stateCallback(true);
+                    stateCallback?.Invoke(true);
                 }
                 catch (Exception)
                 {
@@ -98,6 +92,7 @@ namespace Instech.DataTracker
                 {
                     // 发送成功
                     m_socket.EndSend(result);
+                    totalSendLength += data.Length;
                 }, null);
             }
             catch (Exception e)

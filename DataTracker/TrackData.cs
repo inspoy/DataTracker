@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Instech.DataTracker
+﻿namespace Instech.DataTracker
 {
     /// <summary>
     /// 追踪数据的数据结构
@@ -20,7 +14,7 @@ namespace Instech.DataTracker
     public class TrackDataUserInfo : ITrackData
     {
         public string EventName => "UserInfo";
-        
+
         /// <summary>
         /// 性别：0-未指定 1-男 2-女
         /// </summary>
@@ -29,5 +23,28 @@ namespace Instech.DataTracker
         /// 年龄
         /// </summary>
         public int age;
+        /// <summary>
+        /// 用户渠道
+        /// </summary>
+        public int channel;
+    }
+
+    /// <summary>
+    /// 准备发送到服务器的最终数据结构
+    /// </summary>
+    internal class TrackDataToSend
+    {
+        /// <summary>
+        /// 用户唯一ID
+        /// </summary>
+        public string uid;
+        /// <summary>
+        /// 发送时间（Unix时间戳）
+        /// </summary>
+        public int sendTime;
+        /// <summary>
+        /// 追踪数据
+        /// </summary>
+        public ITrackData data;
     }
 }
