@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataTracker", "DataTracker\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMain", "TestMain\TestMain.csproj", "{A8597DC8-3007-4393-8E55-5B2388438BAE}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "DataServer", "DataServer\DataServer.njsproj", "{05AC611A-839E-4918-95B4-BE571A36DE84}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A8597DC8-3007-4393-8E55-5B2388438BAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8597DC8-3007-4393-8E55-5B2388438BAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8597DC8-3007-4393-8E55-5B2388438BAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05AC611A-839E-4918-95B4-BE571A36DE84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05AC611A-839E-4918-95B4-BE571A36DE84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05AC611A-839E-4918-95B4-BE571A36DE84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05AC611A-839E-4918-95B4-BE571A36DE84}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

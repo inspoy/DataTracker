@@ -1,0 +1,9 @@
+{
+  "name": "data-server",
+  "version": "0.0.0",
+  "description": "DataServer",
+  "main": "app.js",
+  "author": {
+    "name": "inspo"
+  }
+}
