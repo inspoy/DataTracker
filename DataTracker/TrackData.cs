@@ -39,6 +39,10 @@
         /// </summary>
         public string uid;
         /// <summary>
+        /// 人类可读的用户昵称
+        /// </summary>
+        public string userName;
+        /// <summary>
         /// 发送时间（Unix时间戳）
         /// </summary>
         public int sendTime;

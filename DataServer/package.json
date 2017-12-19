@@ -5,5 +5,8 @@
   "main": "app.js",
   "author": {
     "name": "inspoy"
+  },
+  "dependencies": {
+    "mysql": "^2.15.0"
   }
 }

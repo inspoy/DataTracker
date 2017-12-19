@@ -29,12 +29,13 @@ namespace Instech.DataTracker
         /// 初始化
         /// </summary>
         /// <param name="uid">用户唯一ID</param>
+        /// <param name="userName">人类可读的用户昵称</param>
         /// <param name="ip">服务端IP地址</param>
         /// <param name="port">服务端端口号</param>
         /// <param name="errorCallback">发生错误时的回调</param>
-        public static void Init(string uid, string ip, int port, Action<string> errorCallback)
+        public static void Init(string uid, string userName, string ip, int port, Action<string> errorCallback)
         {
-            Instance.InstanceInit(uid, ip, port, errorCallback);
+            Instance.InstanceInit(uid, userName, ip, port, errorCallback);
         }
 
         /// <summary>
@@ -49,14 +50,16 @@ namespace Instech.DataTracker
         #endregion
 
         private string m_uid;
+        private string m_userName;
         private string m_ip;
         private int m_port;
         private Action<string> m_errorCallback;
         private List<TrackDataToSend> m_listRetry = new List<TrackDataToSend>();
 
-        private void InstanceInit(string uid, string ip, int port, Action<string> errorCallback = null)
+        private void InstanceInit(string uid, string userName, string ip, int port, Action<string> errorCallback = null)
         {
             m_uid = uid;
+            m_userName = userName;
             m_ip = ip;
             m_port = port;
             m_errorCallback = errorCallback;
@@ -64,7 +67,10 @@ namespace Instech.DataTracker
 
         private void InstanceSendData(ITrackData data, Action<bool> callback)
         {
-
+            if (data == null)
+            {
+                return;
+            }
             var client = new TcpClient();
             client.Init(m_ip, m_port, m_errorCallback, succ =>
             {
@@ -78,6 +84,7 @@ namespace Instech.DataTracker
                 var finalData = new TrackDataToSend()
                 {
                     uid = m_uid,
+                    userName = m_userName,
                     sendTime = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds,
                     data = data
                 };

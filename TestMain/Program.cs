@@ -9,7 +9,7 @@ namespace TestMain
         {
             var serverIp = "127.0.0.1";
             var serverPort = 62849;
-            DataTracker.Init("123", serverIp, serverPort, msg =>
+            DataTracker.Init("123\"", Environment.UserName, serverIp, serverPort, msg =>
             {
                 Console.WriteLine("Error: " + msg);
             });
