@@ -3,6 +3,10 @@
  */
 exports.serverPort = 62849;
 /**
+ * MySQL数据库地址
+ */
+exports.databaseHost = "localhost";
+/**
  * DataTracker用的数据库名称
  */
 exports.databaseName = "DataTracker";

@@ -3,7 +3,7 @@ const conf = require("./conf");
 const utils = require("./Utils");
 const mysql = require("mysql");
 const conn = mysql.createConnection({
-    host: "inspoy.cc",
+    host: conf.databaseHost,
     user: conf.databaseUser,
     password: conf.databasePass,
     database: conf.databaseName
