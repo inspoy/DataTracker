@@ -49,20 +49,29 @@ namespace Instech.DataTracker
         }
         #endregion
 
+        private bool m_inited = false;
         private string m_uid;
         private string m_userName;
         private string m_ip;
         private int m_port;
+        private string m_sessionId;
         private Action<string> m_errorCallback;
         private List<TrackDataToSend> m_listRetry = new List<TrackDataToSend>();
 
         private void InstanceInit(string uid, string userName, string ip, int port, Action<string> errorCallback = null)
         {
+            if (m_inited)
+            {
+                // 重复调用初始化
+                return;
+            }
+            m_inited = true;
             m_uid = uid;
             m_userName = userName;
             m_ip = ip;
             m_port = port;
             m_errorCallback = errorCallback;
+            m_sessionId = Guid.NewGuid().ToString();
         }
 
         private void InstanceSendData(ITrackData data, Action<bool> callback)
@@ -85,6 +94,7 @@ namespace Instech.DataTracker
                 {
                     uid = m_uid,
                     userName = m_userName,
+                    sessionId = m_sessionId,
                     sendTime = (int)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds,
                     data = data
                 };

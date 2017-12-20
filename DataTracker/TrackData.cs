@@ -43,6 +43,10 @@
         /// </summary>
         public string userName;
         /// <summary>
+        /// 每次游玩的唯一ID，本次游玩期间保持不变
+        /// </summary>
+        public string sessionId;
+        /// <summary>
         /// 发送时间（Unix时间戳）
         /// </summary>
         public int sendTime;

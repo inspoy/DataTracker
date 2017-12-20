@@ -105,6 +105,7 @@ CREATE TABLE Data  (
   id int(32) NOT NULL AUTO_INCREMENT,
   uid varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
+  session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   event_data varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   upload_time datetime NOT NULL,
