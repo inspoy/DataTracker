@@ -21,7 +21,7 @@ var escapeString = function (raw) {
  */
 var insertToDatabase = function (rawObj) {
     try {
-        var q = "\nINSERT INTO Data\n    ( uid, user_name, event_name, event_data, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
+        var q = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
         console.log(q);
         conn.query(q, function (error, results, fields) {
             if (error) {
