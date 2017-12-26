@@ -25,9 +25,9 @@ const insertToDatabase = function (rawObj) {
     try {
         const q = `
 INSERT INTO Data
-    ( uid, user_name, event_name, event_data, upload_time )
+    ( uid, user_name, session_id, event_name, event_data, upload_time )
 VALUES
-    ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
+    ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
 `;
         console.log(q);
         conn.query(q, function (error, results, fields) {
