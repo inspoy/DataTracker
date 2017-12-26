@@ -47,6 +47,15 @@ namespace Instech.DataTracker
         {
             Instance.InstanceSendData(data, callback);
         }
+
+        /// <summary>
+        /// 获取当前的SessionID
+        /// </summary>
+        /// <returns></returns>
+        public static string GetSessionId()
+        {
+            return Instance.m_sessionId;
+        }
         #endregion
 
         private bool m_inited = false;
@@ -87,7 +96,7 @@ namespace Instech.DataTracker
                 {
                     // 网络异常
                     m_errorCallback?.Invoke("连接失败");
-                    callback(false);
+                    callback?.Invoke(false);
                     return;
                 }
                 var finalData = new TrackDataToSend()
@@ -102,7 +111,7 @@ namespace Instech.DataTracker
                 {
                     client.Uninit();
                     client = null;
-                    callback(ret);
+                    callback?.Invoke(ret);
                 });
             });
         }
