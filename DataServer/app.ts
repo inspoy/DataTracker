@@ -10,6 +10,40 @@ const conn = mysql.createConnection({
 });
 
 /**
+ * 输出带时间戳的日志
+ * @param msg 内容
+ */
+const logMessage = function(msg) {
+    console.log(`[${(new Date()).Format("yy-MM-dd hh:mm:ss.SSS")}] - ${msg}`);
+}
+
+/**
+ * 给Date添加Format的方法，可以给日期进行格式化
+ * @param fmt 示例：(new Date()).Format("yy-MM-dd hh:mm:ss.SSS")=>"17-4-10 17:42:48.233"
+ */
+Date.prototype.Format = function (fmt) {
+    const ms = this.getMilliseconds();
+    const o = {
+        "M+": this.getMonth() + 1, //月份
+        "d+": this.getDate(), //日
+        "h+": this.getHours(), //小时
+        "m+": this.getMinutes(), //分
+        "s+": this.getSeconds(), //秒
+        "S": ms > 100 ? ms : (ms > 10 ? "0" + ms : "00" + ms) //毫秒
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (const k in o) {
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(
+            RegExp.$1,
+            (RegExp.$1.length == 1) ?
+                (o[k]) :
+                (("00" + o[k]).substr(("" + o[k]).length))
+        );
+    }
+    return fmt;
+};
+
+/**
  * 转义字符串，用于SQL语句
  * @param raw
  */
@@ -29,15 +63,15 @@ INSERT INTO Data
 VALUES
     ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
 `;
-        console.log(q);
+        logMessage(q);
         conn.query(q, function (error, results, fields) {
             if (error) {
-                console.log("写入数据库出错" + error);
+                logMessage("写入数据库出错" + error);
             };
         });
     }
     catch (e) {
-        console.log("写入数据库出错" + e);
+        logMessage("写入数据库出错" + e);
     }
 }
 
@@ -47,17 +81,17 @@ VALUES
  */
 const onSocket = function (socket) {
     socket.uid = utils.getRandomString("socket_");
-    //console.log(
+    //logMessage(
     //    "有新的连接:\n" +
     //    "- address: " + socket["remoteAddress"] + "\n" +
     //    "-    port: " + socket["remotePort"] + "\n" +
     //    "-      id: " + socket["uid"]
     //);
     socket.on("data", function (data) {
-        console.log("接收到了来自" + socket.uid + "的数据:");
+        logMessage("接收到了来自" + socket.uid + "的数据:");
         const rawObj = JSON.parse(data);
         const eventData = rawObj["data"];
-        console.log(
+        logMessage(
             "-   uid: " + rawObj["uid"] + "\n" +
             "- event: " + eventData["EventName"] + "\n" +
             "-  data: " + JSON.stringify(eventData)
@@ -65,41 +99,41 @@ const onSocket = function (socket) {
         insertToDatabase(rawObj);
     });
     socket.on("end", function () {
-        console.log("连接断开: " + socket.uid);
+        logMessage("连接断开: " + socket.uid);
     });
     socket.on("close", function (had_error) {
         if (had_error) {
-            console.log("socket关闭时出错")
+            logMessage("socket关闭时出错")
         }
     });
     socket.on("error", function (err) {
-        console.log("socket出错: " + err)
+        logMessage("socket出错: " + err)
     });
 };
 
 const startServer = function () {
     const server = net.createServer(onSocket);
     server.on("error", function (err) {
-        console.log("TCP Server Error: " + err);
+        logMessage("TCP Server Error: " + err);
     });
     server.listen(conf.serverPort);
-    console.log("TCP Server Started");
+    logMessage("TCP Server Started");
 }
 
 /**
  * 程序入口
  */
 const main = function () {
-    console.log("正在连接数据库...");
+    logMessage("正在连接数据库...");
     conn.connect();
-    console.log("连接数据库成功");
+    logMessage("连接数据库成功");
     conn.query("SHOW TABLES LIKE 'Data'", function (error, results, fields) {
         if (error) {
             throw error;
         }
         var a = [1, 2, 3];
         if (results.length == 0) {
-            console.log("第一次运行，正在初始化...");
+            logMessage("第一次运行，正在初始化...");
             conn.query(`
 CREATE TABLE Data  (
   id int(32) NOT NULL AUTO_INCREMENT,
@@ -117,7 +151,7 @@ CREATE TABLE Data  (
                     if (error) {
                         throw error;
                     };
-                    console.log("初始化完毕，请重新运行");
+                    logMessage("初始化完毕，请重新运行");
                     process.exit();
                 });
         }
