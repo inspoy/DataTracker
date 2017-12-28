@@ -2,7 +2,7 @@ var net = require("net");
 var conf = require("./conf");
 var utils = require("./Utils");
 var mysql = require("mysql");
-var conn = mysql.createConnection({
+var pool = mysql.createPool({
     host: conf.databaseHost,
     user: conf.databaseUser,
     password: conf.databasePass,
@@ -52,13 +52,19 @@ var escapeString = function (raw) {
  */
 var insertToDatabase = function (rawObj) {
     try {
-        var q = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
-        logMessage(q);
-        conn.query(q, function (error, results, fields) {
-            if (error) {
-                logMessage("写入数据库出错" + error);
+        var q_1 = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
+        // logMessage(q);
+        pool.getConnection(function (err, conn) {
+            if (err) {
+                logMessage("获取数据库连接出错" + err);
             }
-            ;
+            conn.query(q_1, function (error, results, fields) {
+                conn.release();
+                if (error) {
+                    logMessage("写入数据库出错" + error);
+                }
+                ;
+            });
         });
     }
     catch (e) {
@@ -111,13 +117,20 @@ var startServer = function () {
  */
 var main = function () {
     logMessage("正在连接数据库...");
-    conn.connect();
+    pool.getConnection(function (err, conn) {
+        if (err) {
+            logMessage("初始化数据库连接失败");
+            process.exit();
+        }
+        onConnect(conn);
+    });
+};
+var onConnect = function (conn) {
     logMessage("连接数据库成功");
     conn.query("SHOW TABLES LIKE 'Data'", function (error, results, fields) {
         if (error) {
             throw error;
         }
-        var a = [1, 2, 3];
         if (results.length == 0) {
             logMessage("第一次运行，正在初始化...");
             conn.query("\nCREATE TABLE Data  (\n  id int(32) NOT NULL AUTO_INCREMENT,\n  uid varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_data varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  upload_time datetime NOT NULL,\n  PRIMARY KEY (id),\n  INDEX uid(uid) USING HASH,\n  INDEX event_name(event_name) USING HASH\n) ENGINE = InnoDB;\n", function (error, results, fields) {
@@ -132,6 +145,7 @@ var main = function () {
         else {
             startServer();
         }
+        conn.release();
     });
 };
 main();

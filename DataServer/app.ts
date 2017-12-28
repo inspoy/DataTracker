@@ -2,7 +2,7 @@
 const conf = require("./conf");
 const utils = require("./Utils");
 const mysql = require("mysql");
-const conn = mysql.createConnection({
+const pool = mysql.createPool({
     host: conf.databaseHost,
     user: conf.databaseUser,
     password: conf.databasePass,
@@ -63,11 +63,17 @@ INSERT INTO Data
 VALUES
     ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
 `;
-        logMessage(q);
-        conn.query(q, function (error, results, fields) {
-            if (error) {
-                logMessage("写入数据库出错" + error);
-            };
+        // logMessage(q);
+        pool.getConnection(function(err,conn){
+            if (err) {
+                logMessage("获取数据库连接出错" + err);
+            }
+            conn.query(q, function (error, results, fields) {
+                conn.release();
+                if (error) {
+                    logMessage("写入数据库出错" + error);
+                };
+            });
         });
     }
     catch (e) {
@@ -125,13 +131,21 @@ const startServer = function () {
  */
 const main = function () {
     logMessage("正在连接数据库...");
-    conn.connect();
+    pool.getConnection(function(err, conn){
+        if (err){
+            logMessage("初始化数据库连接失败");
+            process.exit();
+        }
+        onConnect(conn);
+    });
+}
+
+const onConnect = function (conn) {
     logMessage("连接数据库成功");
     conn.query("SHOW TABLES LIKE 'Data'", function (error, results, fields) {
         if (error) {
             throw error;
         }
-        var a = [1, 2, 3];
         if (results.length == 0) {
             logMessage("第一次运行，正在初始化...");
             conn.query(`
@@ -158,6 +172,7 @@ CREATE TABLE Data  (
         else {
             startServer();
         }
+        conn.release();
     });
 };
 
