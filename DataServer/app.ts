@@ -123,7 +123,7 @@ const startServer = function () {
     server.on("error", function (err) {
         logMessage("TCP Server Error: " + err);
     });
-    server.listen(conf.serverPort);
+    server.listen(conf.serverPort, "0.0.0.0");
     logMessage("TCP Server Started");
 }
 
