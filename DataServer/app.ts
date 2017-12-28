@@ -54,14 +54,15 @@ const escapeString = function (raw) {
 /**
  * 写入到数据库
  * @param rawObj 原始数据
+ * @param addr 客户端IP地址
  */
-const insertToDatabase = function (rawObj) {
+const insertToDatabase = function (rawObj, addr) {
     try {
         const q = `
 INSERT INTO Data
-    ( uid, user_name, session_id, event_name, event_data, upload_time )
+    ( uid, user_name, session_id, event_name, event_data, addr, upload_time )
 VALUES
-    ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
+    ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', '${addr}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
 `;
         // logMessage(q);
         pool.getConnection(function(err,conn){
@@ -103,7 +104,7 @@ const onSocket = function (socket) {
             "- event: " + eventData["EventName"] + "\n" +
             "-  data: " + JSON.stringify(eventData)
         );
-        insertToDatabase(rawObj);
+        insertToDatabase(rawObj, socket["remoteAddress"]);
     });
     socket.on("end", function () {
         logMessage("连接断开: " + socket.uid);
@@ -156,7 +157,8 @@ CREATE TABLE Data  (
   user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  event_data varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
+  event_data varchar(32767) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
+  addr varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   upload_time datetime NOT NULL,
   PRIMARY KEY (id),
   INDEX uid(uid) USING HASH,

@@ -49,10 +49,11 @@ var escapeString = function (raw) {
 /**
  * 写入到数据库
  * @param rawObj 原始数据
+ * @param addr 客户端IP地址
  */
-var insertToDatabase = function (rawObj) {
+var insertToDatabase = function (rawObj, addr) {
     try {
-        var q_1 = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
+        var q_1 = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, addr, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', '" + addr + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
         // logMessage(q);
         pool.getConnection(function (err, conn) {
             if (err) {
@@ -92,7 +93,7 @@ var onSocket = function (socket) {
             "-   uid: " + rawObj["uid"] + "\n" +
             "- event: " + eventData["EventName"] + "\n" +
             "-  data: " + JSON.stringify(eventData));
-        insertToDatabase(rawObj);
+        insertToDatabase(rawObj, socket["remoteAddress"]);
     });
     socket.on("end", function () {
         logMessage("连接断开: " + socket.uid);
@@ -135,7 +136,7 @@ var onConnect = function (conn) {
         }
         if (results.length == 0) {
             logMessage("第一次运行，正在初始化...");
-            conn.query("\nCREATE TABLE Data  (\n  id int(32) NOT NULL AUTO_INCREMENT,\n  uid varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_data varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  upload_time datetime NOT NULL,\n  PRIMARY KEY (id),\n  INDEX uid(uid) USING HASH,\n  INDEX event_name(event_name) USING HASH\n) ENGINE = InnoDB;\n", function (error, results, fields) {
+            conn.query("\nCREATE TABLE Data  (\n  id int(32) NOT NULL AUTO_INCREMENT,\n  uid varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_data varchar(32767) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  addr varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  upload_time datetime NOT NULL,\n  PRIMARY KEY (id),\n  INDEX uid(uid) USING HASH,\n  INDEX event_name(event_name) USING HASH\n) ENGINE = InnoDB;\n", function (error, results, fields) {
                 if (error) {
                     throw error;
                 }
