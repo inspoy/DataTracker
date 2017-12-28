@@ -71,7 +71,7 @@ VALUES
             conn.query(q, function (error, results, fields) {
                 conn.release();
                 if (error) {
-                    logMessage("写入数据库出错" + error);
+                    logMessage("执行写入数据库出错" + error);
                 };
             });
         });
@@ -97,7 +97,8 @@ const onSocket = function (socket) {
         logMessage("接收到了来自" + socket.uid + "的数据:");
         const rawObj = JSON.parse(data);
         const eventData = rawObj["data"];
-        logMessage(
+        logMessage("\n" +
+            "-  addr: " + socket["remoteAddress"] + "\n" +
             "-   uid: " + rawObj["uid"] + "\n" +
             "- event: " + eventData["EventName"] + "\n" +
             "-  data: " + JSON.stringify(eventData)
