@@ -53,7 +53,7 @@ var escapeString = function (raw) {
  */
 var insertToDatabase = function (rawObj, addr) {
     try {
-        var q_1 = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, addr, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', '" + addr + "', FROM_UNIXTIME( " + rawObj["sendTime"] + " ) )\n";
+        var q_1 = "\nINSERT INTO Data\n    ( uid, user_name, session_id, event_name, event_data, addr, upload_time )\nVALUES\n    ( '" + escapeString(rawObj["uid"]) + "', '" + escapeString(rawObj["userName"]) + "', '" + rawObj["sessionId"] + "', '" + rawObj["data"]["EventName"] + " ', '" + escapeString(JSON.stringify(rawObj["data"])) + "', '" + addr + "', NOW() )\n";
         // logMessage(q);
         pool.getConnection(function (err, conn) {
             if (err) {

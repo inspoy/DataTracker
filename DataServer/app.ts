@@ -62,7 +62,7 @@ const insertToDatabase = function (rawObj, addr) {
 INSERT INTO Data
     ( uid, user_name, session_id, event_name, event_data, addr, upload_time )
 VALUES
-    ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', '${addr}', FROM_UNIXTIME( ${rawObj["sendTime"]} ) )
+    ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', '${addr}', NOW() )
 `;
         // logMessage(q);
         pool.getConnection(function(err,conn){
