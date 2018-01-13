@@ -86,14 +86,20 @@ var onSocket = function (socket) {
     //);
     socket.on("data", function (data) {
         logMessage("接收到了来自" + socket.uid + "的数据:");
-        var rawObj = JSON.parse(data);
-        var eventData = rawObj["data"];
-        logMessage("\n" +
-            "-  addr: " + socket["remoteAddress"] + "\n" +
-            "-   uid: " + rawObj["uid"] + "\n" +
-            "- event: " + eventData["EventName"] + "\n" +
-            "-  data: " + JSON.stringify(eventData));
-        insertToDatabase(rawObj, socket["remoteAddress"]);
+        try {
+            var rawObj = JSON.parse(data);
+            var eventData = rawObj["data"];
+            logMessage("\n" +
+                "-  addr: " + socket["remoteAddress"] + "\n" +
+                "-   uid: " + rawObj["uid"] + "\n" +
+                "- event: " + eventData["EventName"] + "\n" +
+                "-  data: " + JSON.stringify(eventData));
+            insertToDatabase(rawObj, socket["remoteAddress"]);
+        }
+        catch (e) {
+            logMessage("出现错误,解析json失败" + e);
+            logMessage("原始数据：" + data);
+        }
     });
     socket.on("end", function () {
         logMessage("连接断开: " + socket.uid);
@@ -136,7 +142,7 @@ var onConnect = function (conn) {
         }
         if (results.length == 0) {
             logMessage("第一次运行，正在初始化...");
-            conn.query("\nCREATE TABLE Data  (\n  id int(32) NOT NULL AUTO_INCREMENT,\n  uid varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_data varchar(32767) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  addr varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  upload_time datetime NOT NULL,\n  PRIMARY KEY (id),\n  INDEX uid(uid) USING HASH,\n  INDEX event_name(event_name) USING HASH\n) ENGINE = InnoDB;\n", function (error, results, fields) {
+            conn.query("\nCREATE TABLE Data  (\n  id int(32) NOT NULL AUTO_INCREMENT,\n  uid varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,\n  event_data text CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  addr varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,\n  upload_time datetime NOT NULL,\n  PRIMARY KEY (id),\n  INDEX uid(uid) USING HASH,\n  INDEX event_name(event_name) USING HASH\n) ENGINE = InnoDB;\n", function (error, results, fields) {
                 if (error) {
                     throw error;
                 }

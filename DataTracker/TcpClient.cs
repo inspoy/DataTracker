@@ -72,7 +72,8 @@ namespace Instech.DataTracker
         /// <summary>
         /// 发送数据
         /// </summary>
-        /// <param name="msg"></param>
+        /// <param name="msg">数据</param>
+        /// <param name="callback">返回结果用的回调</param>
         public void SendData(string msg, Action<bool> callback)
         {
             if (!isReady || msg == "")

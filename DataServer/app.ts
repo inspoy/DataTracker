@@ -13,7 +13,7 @@ const pool = mysql.createPool({
  * 输出带时间戳的日志
  * @param msg 内容
  */
-const logMessage = function(msg) {
+const logMessage = function (msg) {
     console.log(`[${(new Date()).Format("yy-MM-dd hh:mm:ss.SSS")}] - ${msg}`);
 }
 
@@ -65,7 +65,7 @@ VALUES
     ( '${escapeString(rawObj["uid"])}', '${escapeString(rawObj["userName"])}', '${rawObj["sessionId"]}', '${rawObj["data"]["EventName"]} ', '${escapeString(JSON.stringify(rawObj["data"]))}', '${addr}', NOW() )
 `;
         // logMessage(q);
-        pool.getConnection(function(err,conn){
+        pool.getConnection(function (err, conn) {
             if (err) {
                 logMessage("获取数据库连接出错" + err);
             }
@@ -73,7 +73,8 @@ VALUES
                 conn.release();
                 if (error) {
                     logMessage("执行写入数据库出错" + error);
-                };
+                }
+                ;
             });
         });
     }
@@ -96,15 +97,21 @@ const onSocket = function (socket) {
     //);
     socket.on("data", function (data) {
         logMessage("接收到了来自" + socket.uid + "的数据:");
-        const rawObj = JSON.parse(data);
-        const eventData = rawObj["data"];
-        logMessage("\n" +
-            "-  addr: " + socket["remoteAddress"] + "\n" +
-            "-   uid: " + rawObj["uid"] + "\n" +
-            "- event: " + eventData["EventName"] + "\n" +
-            "-  data: " + JSON.stringify(eventData)
-        );
-        insertToDatabase(rawObj, socket["remoteAddress"]);
+        try {
+            const rawObj = JSON.parse(data);
+            const eventData = rawObj["data"];
+            logMessage("\n" +
+                "-  addr: " + socket["remoteAddress"] + "\n" +
+                "-   uid: " + rawObj["uid"] + "\n" +
+                "- event: " + eventData["EventName"] + "\n" +
+                "-  data: " + JSON.stringify(eventData)
+            );
+            insertToDatabase(rawObj, socket["remoteAddress"]);
+        }
+        catch (e) {
+            logMessage("出现错误,解析json失败" + e);
+            logMessage("原始数据：" + data);
+        }
     });
     socket.on("end", function () {
         logMessage("连接断开: " + socket.uid);
@@ -133,8 +140,8 @@ const startServer = function () {
  */
 const main = function () {
     logMessage("正在连接数据库...");
-    pool.getConnection(function(err, conn){
-        if (err){
+    pool.getConnection(function (err, conn) {
+        if (err) {
             logMessage("初始化数据库连接失败");
             process.exit();
         }
@@ -157,7 +164,7 @@ CREATE TABLE Data  (
   user_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   session_id varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   event_name varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  event_data varchar(32767) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
+  event_data text CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   addr varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   upload_time datetime NOT NULL,
   PRIMARY KEY (id),
@@ -165,12 +172,13 @@ CREATE TABLE Data  (
   INDEX event_name(event_name) USING HASH
 ) ENGINE = InnoDB;
 `, function (error, results, fields) {
-                    if (error) {
-                        throw error;
-                    };
-                    logMessage("初始化完毕，请重新运行");
-                    process.exit();
-                });
+                if (error) {
+                    throw error;
+                }
+                ;
+                logMessage("初始化完毕，请重新运行");
+                process.exit();
+            });
         }
         else {
             startServer();
