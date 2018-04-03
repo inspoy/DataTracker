@@ -103,6 +103,7 @@ const onSocket = function (socket) {
             logMessage("\n" +
                 "-  addr: " + socket["remoteAddress"] + "\n" +
                 "-   uid: " + rawObj["uid"] + "\n" +
+                "-  name: " + rawObj["userName"] + "\n" +
                 "- event: " + eventData["EventName"] + "\n" +
                 "-  data: " + JSON.stringify(eventData)
             );
@@ -114,7 +115,7 @@ const onSocket = function (socket) {
         }
     });
     socket.on("end", function () {
-        logMessage("连接断开: " + socket.uid);
+        logMessage("连接断开: " + socket.uid + "\n");
     });
     socket.on("close", function (had_error) {
         if (had_error) {
